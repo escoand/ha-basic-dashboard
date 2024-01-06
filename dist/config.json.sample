@@ -1,0 +1,9 @@
+{
+  "token": "",
+  "floors": {
+    "Floor 1": ["cover.garagentor_links", "cover.garagentor_mitte"],
+    "Floor 2": [],
+    "Switches": ["/switch\\..*/"],
+    "ALL": null
+  }
+}

@@ -1,0 +1,44 @@
+body {
+  font-family: sans-serif;
+}
+
+#date,
+.floor {
+  background: black;
+  border: 1px solid black;
+  color: white;
+  display: inline-block;
+  font-weight: bold;
+  line-height: 20pt;
+  margin: 0 3px 0 0;
+  overflow: hidden;
+  padding: 5px 2px;
+  text-align: center;
+  width: 150px;
+}
+
+.entity {
+  border: 1px solid black;
+  display: inline-block;
+  font-size: small;
+  margin: 0 3px 0 0;
+  overflow: hidden;
+  padding: 5px 2px;
+  text-align: center;
+  width: 150px;
+}
+
+.entity .name {
+  text-wrap: nowrap;
+}
+
+.entity .state {
+  font-style: italic;
+  height: 24px;
+  line-height: 24px;
+}
+
+.entity .state svg {
+  height: 24px;
+  width: 24px;
+}
