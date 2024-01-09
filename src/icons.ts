@@ -382,7 +382,7 @@ const icons = {
   sun: { above_horizon: mdiWhiteBalanceSunny, default: mdiWeatherNight },
   switch: {
     outlet: { on: mdiPowerPlug, default: mdiPowerPlugOff },
-    // switch: { on: mdiToggleSwitchVariant, default: mdiToggleSwitchVariantOff },
+    //switch: { on: mdiToggleSwitchVariant, default: mdiToggleSwitchVariantOff },
     //default: mdiToggleSwitchVariant,
     switch: { on: mdiToggleSwitch, default: mdiToggleSwitchOffOutline },
     on: mdiToggleSwitch,
@@ -406,19 +406,30 @@ const icons = {
   zone: mdiMapMarkerRadius,
 };
 
+const isString = (value) =>
+  typeof value === "string" || value instanceof String;
+const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
+const getIconInner = (icons, state: string) =>
+  !isNumber(state) &&
+  ((icons?.hasOwnProperty(state) && icons[state]) ||
+    (icons?.default?.hasOwnProperty(state) && icons.default[state]) ||
+    icons?.default);
+
 export const getIcon = (entity: HassEntity): string => {
   const domain = entity.entity_id.split(".")[0];
 
   return (
-    // device_class
-    (entity.attributes.device_class
-      ? icons[domain]?.[entity.attributes.device_class]?.[entity.state] ||
-        icons[domain]?.[entity.attributes.device_class]?.default
-      : // state
-        icons[domain]?.[entity.state] instanceof String &&
-        icons[domain]?.[entity.state]) ||
-    (icons[domain]?.default instanceof String && icons[domain]?.default) ||
-    // domain
-    (icons[domain] instanceof String && icons[domain])
+    // device_class based
+    (entity.attributes.device_class &&
+      getIconInner(
+        icons[domain]?.[entity.attributes.device_class],
+        entity.state
+      )) ||
+    getIconInner(icons[domain]?.default, entity.state) ||
+    // state based
+    getIconInner(icons[domain], entity.state) ||
+    // domain based
+    (isString(icons[domain]) && icons[domain])
   );
 };

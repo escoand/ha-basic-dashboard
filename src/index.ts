@@ -1,5 +1,6 @@
 import "core-js/actual/array/filter";
 import "core-js/actual/array/for-each";
+//import "core-js/actual/array/includes";
 import "core-js/actual/array/is-array";
 import "core-js/actual/array/map";
 import "core-js/actual/json/parse";
@@ -9,7 +10,6 @@ import { getIcon } from "./icons";
 import { BasicDashboardConfig, BasicDashboardConfigEntity } from "./types";
 
 const refreshInterval = 5 * 60 * 1000;
-const actionRefreshTimeouts = [1 * 1000, 20 * 1000];
 
 class BasicDashboard {
   config: BasicDashboardConfig;
@@ -166,10 +166,24 @@ class BasicDashboardEntity {
     // attribute
     if (this.config?.attribute) {
       const unitAttribute = this.config.attribute + "_unit";
-      state.appendChild(
-        document.createTextNode(attributes[this.config.attribute])
-      );
       state.appendChild(document.createTextNode(" "));
+      /*if (["last_triggered"].includes(this.config.attribute)) {
+        state.appendChild(
+          document.createTextNode(
+            new Date(attributes[this.config.attribute]).toLocaleString(
+              undefined,
+              {
+                dateStyle: "short",
+                timeStyle: "medium",
+              }
+            )
+          )
+        );
+      } else*/ {
+        state.appendChild(
+          document.createTextNode(attributes[this.config.attribute])
+        );
+      }
       if (this.config?.unit_of_measurement) {
         state.appendChild(
           document.createTextNode(this.config?.unit_of_measurement)
@@ -216,10 +230,10 @@ class BasicDashboardEntity {
       "POST",
       "/api/services/" + this.config?.action?.replace(".", "/"),
       '{"entity_id":"' + this.entity.entity_id + '"}',
-      () =>
-        actionRefreshTimeouts.forEach((timeout) =>
-          setTimeout(this.refresh, timeout)
-        )
+      (response) =>
+        (JSON.parse(response) as HassEntity[])
+          .filter((entity) => entity.entity_id == this.entity.entity_id)
+          .map(this.update).length || setTimeout(this.refresh, 1000)
     );
   };
 }
