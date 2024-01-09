@@ -34,6 +34,7 @@ body {
 }
 
 .entity {
+  float: left;
   height: 105px;
 }
 
