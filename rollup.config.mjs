@@ -4,9 +4,6 @@ import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import serve from "rollup-plugin-serve";
 
-const isWatching =
-  process.argv.includes("-w") || process.argv.includes("--watch");
-
 export default {
   input: ["src/index.ts"],
   output: {
@@ -22,7 +19,7 @@ export default {
       inlineSourceMap: true,
       compilerOptions: { target: "ES3" },
     }),
-    isWatching
+    process.env.ROLLUP_WATCH
       ? serve({
           open: true,
           contentBase: "dist",
