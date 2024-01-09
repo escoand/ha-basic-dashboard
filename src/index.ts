@@ -1,10 +1,7 @@
 import "core-js/actual/array/filter";
-import "core-js/actual/array/find";
 import "core-js/actual/array/for-each";
-import "core-js/actual/array/includes";
 import "core-js/actual/array/is-array";
 import "core-js/actual/array/map";
-import "core-js/actual/array/some";
 import "core-js/actual/json/parse";
 import "core-js/actual/object/keys";
 import { HassEntity } from "home-assistant-js-websocket/dist/types";
