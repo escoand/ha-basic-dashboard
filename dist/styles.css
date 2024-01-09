@@ -1,44 +1,69 @@
 body {
   font-family: sans-serif;
+  font-size: larger;
+}
+
+.box {
+  border: 1px solid black;
+  box-sizing: border-box;
+  display: inline-block;
+  margin: 0 3px 3px 0;
+  max-width: 31%;
+  overflow: hidden;
+  padding: 5px 2px;
+  text-align: center;
+  width: 180px;
+}
+.box.action {
+  cursor: pointer;
 }
 
 #date,
 .floor {
   background: black;
-  border: 1px solid black;
   color: white;
-  display: inline-block;
   font-weight: bold;
-  line-height: 20pt;
-  margin: 0 3px 0 0;
-  overflow: hidden;
-  padding: 5px 2px;
-  text-align: center;
-  width: 150px;
+  line-height: 40px;
+}
+
+#message pre {
+  border: 1px solid red;
+  background: lightcoral;
+  padding: 5px;
+  margin: 5px 0;
 }
 
 .entity {
-  border: 1px solid black;
-  display: inline-block;
-  font-size: small;
-  margin: 0 3px 0 0;
-  overflow: hidden;
-  padding: 5px 2px;
-  text-align: center;
-  width: 150px;
+  height: 105px;
 }
 
 .entity .name {
-  text-wrap: nowrap;
+  height: 45px;
+  overflow: hidden;
 }
 
 .entity .state {
   font-style: italic;
-  height: 24px;
-  line-height: 24px;
+  height: 48px;
+  line-height: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entity .state svg {
-  height: 24px;
-  width: 24px;
+  height: 100%;
+  width: 100%;
+}
+
+#footer {
+  background: white;
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  right: 0;
+}
+#footer #status {
+  padding: 2px 5px;
+  text-align: right;
 }

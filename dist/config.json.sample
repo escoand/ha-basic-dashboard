@@ -1,9 +1,18 @@
 {
-  "token": "",
+  "base": null,
+  "token": null,
   "floors": {
-    "Floor 1": ["cover.garagentor_links", "cover.garagentor_mitte"],
-    "Floor 2": [],
-    "Switches": ["/switch\\..*/"],
+    "Important": [
+      {
+        "entity_id": "cover.garagentor_links",
+        "action": "homeassistant.toggle"
+      },
+      {
+        "entity_id": "weather.lichtentanne",
+        "attribute": "temperature"
+      }
+    ],
+    "Switches": "^(switch|light)\\..*$",
     "ALL": null
   }
 }

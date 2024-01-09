@@ -1,177 +1,245 @@
-import icon_sensor_on from "../node_modules/@mdi/svg/svg/check-circle.svg";
-import icon_sensor_off from "../node_modules/@mdi/svg/svg/circle-outline.svg";
-import icon_toggle_on from "../node_modules/@mdi/svg/svg/toggle-switch.svg";
-import icon_toggle_off from "../node_modules/@mdi/svg/svg/toggle-switch-off-outline.svg";
-import icon_alert from "../node_modules/@mdi/svg/svg/alert-outline.svg";
-import icon_cover_open from "../node_modules/@mdi/svg/svg/garage-open.svg";
-import icon_cover_closed from "../node_modules/@mdi/svg/svg/garage.svg";
-import icon_cover_opening from "../node_modules/@mdi/svg/svg/arrow-up-box.svg";
-import icon_cover_closing from "../node_modules/@mdi/svg/svg/arrow-down-box.svg";
+import "core-js/actual/array/filter";
+import "core-js/actual/array/find";
+import "core-js/actual/array/for-each";
+import "core-js/actual/array/includes";
+import "core-js/actual/array/is-array";
+import "core-js/actual/array/map";
+import "core-js/actual/array/some";
+import "core-js/actual/json/parse";
+import "core-js/actual/object/keys";
+import { HassEntity } from "home-assistant-js-websocket/dist/types";
+import { getIcon } from "./icons";
+import { BasicDashboardConfig, BasicDashboardConfigEntity } from "./types";
 
-const binaries = {
-  on: icon_sensor_on,
-  off: icon_sensor_off,
-};
-const toggles = {
-  off: icon_toggle_off,
-  on: icon_toggle_on,
-  unavailable: icon_alert,
-};
-
-const icons: { [index: string]: any } = {
-  binary_sensor: binaries,
-  climate: toggles,
-  cover: {
-    open: icon_cover_open,
-    opening: icon_cover_opening,
-    closed: icon_cover_closed,
-    closing: icon_cover_closing,
-    editable: true,
-  },
-  switch: { ...toggles, editable: true },
-  update: toggles,
-};
+const refreshInterval = 5 * 60 * 1000;
+const actionRefreshTimeouts = [1 * 1000, 20 * 1000];
 
 class BasicDashboard {
-  config: BasicDashboardConfig = {};
-  currentFloor: string = "not_existing";
+  config: BasicDashboardConfig;
+  private floor: string;
+  elEntities: HTMLElement;
+  private elStatus: HTMLElement;
 
   constructor() {
-    const container = document.getElementById("floors");
-    if (!container) return;
+    // containers
+    const elFloors =
+      document.getElementById("floors") ??
+      this.throwException("unable to find floors element");
+    this.elEntities =
+      document.getElementById("entities") ??
+      this.throwException("unable to find entities element");
+    this.elStatus =
+      document.getElementById("status") ??
+      this.throwException("unable to find status element");
     // config
-    this.request("GET", "config.json", undefined, (xhr) => {
-      this.config = JSON.parse(xhr.responseText);
+    this.request("GET", "config.json", undefined, (response) => {
+      this.config = JSON.parse(response);
       Object.keys(this.config.floors || []).map((floor) => {
-        const elem = container.appendChild(document.createElement("div"));
-        elem.append(floor);
-        elem.className = "floor";
-        elem.style.cursor = "pointer";
-        elem.addEventListener("click", () => {
-          this.currentFloor = floor;
-          this.loadStates();
-        });
+        const elem = elFloors.appendChild(document.createElement("div"));
+        elem.appendChild(document.createTextNode(floor));
+        elem.className = "box floor action";
+        elem.addEventListener("click", () => this.switchFloor(floor));
       });
-      // start update cycle
-      this.currentFloor = Object.keys(this.config.floors || [])[0];
-      setInterval(this.loadStates, 10 * 1000);
-      this.loadStates();
+      this.switchFloor(Object.keys(this.config.floors || [])[0]);
     });
   }
 
-  filterEntity = (floor: string, entity_id: string) => {
-    const isRegex = /^\/.*\/$/;
-    return (
-      // nothing defined
-      this.config.floors?.[floor] === null ||
-      // fixed entity_id
-      this.config.floors?.[floor]?.includes(entity_id) ||
-      // regex
-      this.config.floors?.[floor]?.some(
-        (_) =>
-          isRegex.test(_) &&
-          new RegExp(_.substring(1, _.length - 1)).test(entity_id)
-      )
-    );
+  switchFloor = (floor: string) => {
+    this.elEntities.innerHTML = "";
+    this.floor = floor;
+    const floorConfig = this.config.floors[this.floor];
+    if (Array.isArray(floorConfig)) {
+      floorConfig.forEach((config) =>
+        new BasicDashboardEntity(this, config).refresh()
+      );
+    } else {
+      this.refresh();
+    }
   };
 
-  loadStates = (entity_id?: string) => {
-    const container = document.getElementById("entities");
-    if (!container) return;
-    this.request(
-      "GET",
-      "/api/states" + (entity_id ? "/" + entity_id : ""),
-      undefined,
-      (xhr) => {
-        // date
-        const date = document.getElementById("date");
-        if (date) {
-          date.innerHTML = new Date().toLocaleTimeString(undefined, {
-            timeStyle: "medium",
-          });
-        }
-        // update
-        if (entity_id) {
-          this.updateState(JSON.parse(xhr.responseText));
-        }
-        // entities
-        else {
-          container.innerHTML = "";
-          JSON.parse(xhr.responseText)
-            ?.filter((entity) =>
-              this.filterEntity(this.currentFloor, entity.entity_id)
-            )
-            .map(this.updateState);
+  refresh = () =>
+    this.request("GET", "/api/states", undefined, (response) => {
+      const floor = this.config.floors[this.floor];
+      // date
+      this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
+        timeStyle: "medium",
+      });
+      // data
+      const entities = JSON.parse(response) as HassEntity[];
+      entities
+        .filter(
+          (entity) =>
+            // nothing defined
+            floor === null ||
+            // regex
+            ((typeof floor === "string" || floor instanceof String) &&
+              new RegExp(floor as string).test(entity.entity_id))
+        )
+        .forEach((entity) => {
+          new BasicDashboardEntity(this).update(entity);
+        });
+    });
+
+  // https://developers.home-assistant.io/docs/api/rest/
+  request = (
+    method: string,
+    url: string,
+    body?: string,
+    callback?: (response: string) => void
+  ) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, (this.config?.base || "") + url);
+    xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
+    xhr.onreadystatechange = (evt) => {
+      if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
+        switch (xhr.status) {
+          case 200:
+            if (callback) {
+              callback(xhr.responseText);
+            }
+            break;
+          default:
+            console.error(xhr.responseText);
         }
       }
-    );
-  };
-
-  updateState = (entity) => {
-    const container = document.getElementById("entities");
-    if (!container) return;
-    const elem =
-      document.getElementById(entity.entity_id) ||
-      container.appendChild(document.createElement("div"));
-    elem.innerHTML = "";
-    elem.id = entity.entity_id;
-    elem.className = "entity";
-    // name
-    const name = elem.appendChild(document.createElement("div"));
-    name.className = "name";
-    name.appendChild(
-      document.createTextNode(
-        entity.attributes?.friendly_name || entity.entity_id
-      )
-    );
-    // state
-    const domain = entity.entity_id.split(".")[0];
-    const state = elem.appendChild(document.createElement("div"));
-    state.className = "state";
-    // icon
-    if (domain in icons && entity.state in icons[domain]) {
-      state.setAttribute("title", JSON.stringify(entity));
-      state.innerHTML = icons[domain][entity.state];
-    }
-    // text
-    else {
-      state.append(entity.state);
-    }
-    // clickable
-    if (icons[domain]?.editable) {
-      elem.style.cursor = "pointer";
-      elem.addEventListener("click", () => this.toggleState(entity.entity_id));
-    }
-  };
-
-  toggleState = (entity_id) => {
-    this.request(
-      "POST",
-      "/api/services/homeassistant/toggle",
-      JSON.stringify({ entity_id }),
-      () => setTimeout(() => this.loadStates(entity_id), 1000)
-    );
-  };
-
-  error = (reason) => {
-    const container = document.getElementById("entities");
-    if (container) {
-      container.innerHTML = "<div><pre>" + reason + "</pre></div>";
-    } else {
-      alert(reason);
-    }
-  };
-
-  request = (method, url, body?, callback?) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.setRequestHeader("Authorization", "Bearer " + this.config.token);
-    xhr.onreadystatechange = (evt) => {
-      if (xhr.readyState !== XMLHttpRequest.DONE || xhr.status != 200) return;
-      callback(xhr);
     };
     xhr.send(body);
   };
+
+  throwException = (reason: string): never => {
+    throw new Error(reason);
+  };
 }
 
+class BasicDashboardEntity {
+  private dashboard: BasicDashboard;
+  private config?: BasicDashboardConfigEntity;
+  private entity: HassEntity;
+  private refreshToken: number;
+  private element: HTMLElement;
+
+  constructor(dashboard: BasicDashboard, config?: BasicDashboardConfigEntity) {
+    this.dashboard = dashboard;
+    this.config = config;
+    this.element = this.dashboard.elEntities.appendChild(
+      document.createElement("div")
+    );
+    this.element.className = "box entity";
+    this.element.id = this.config?.entity_id as string;
+    this.element.addEventListener("DOMNodeRemoved", () =>
+      clearTimeout(this.refreshToken)
+    );
+  }
+
+  refresh = () => {
+    this.dashboard.request(
+      "GET",
+      "/api/states/" + (this.entity?.entity_id || this.config?.entity_id),
+      undefined,
+      (response) => this.update(JSON.parse(response))
+    );
+    this.refreshToken = setTimeout(this.refresh, refreshInterval);
+  };
+
+  update = (entity: HassEntity) => {
+    this.entity = entity;
+    this.render();
+  };
+
+  render = () => {
+    if (!this.entity) return;
+    this.element.id = this.entity.entity_id;
+    this.element.innerHTML = "";
+    this.element.className = "box entity";
+    // name
+    const name = this.element.appendChild(document.createElement("div"));
+    name.className = "name";
+    name.appendChild(
+      document.createTextNode(
+        this.config?.name ||
+          this.entity.attributes?.friendly_name ||
+          this.entity.entity_id
+      )
+    );
+    // state
+    const icon = getIcon(this.entity);
+    const state = this.element.appendChild(document.createElement("div"));
+    const attributes = this.entity.attributes;
+    state.className = "state";
+    // attribute
+    if (this.config?.attribute) {
+      const unitAttribute = this.config.attribute + "_unit";
+      state.appendChild(
+        document.createTextNode(attributes[this.config.attribute])
+      );
+      state.appendChild(document.createTextNode(" "));
+      if (this.config?.unit_of_measurement) {
+        state.appendChild(
+          document.createTextNode(this.config?.unit_of_measurement)
+        );
+      } else if (unitAttribute in attributes) {
+        state.appendChild(document.createTextNode(attributes[unitAttribute]));
+      }
+    }
+    // icon
+    else if (icon) {
+      state.setAttribute("title", this.entity.state);
+      const svg = state.appendChild(
+        document.createElementNS("http://www.w3.org/2000/svg", "svg")
+      );
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg
+        .appendChild(document.createElementNS(svg.namespaceURI, "path"))
+        .setAttribute("d", icon);
+    }
+    // state
+    else {
+      state.appendChild(document.createTextNode(this.entity.state));
+      state.appendChild(document.createTextNode(" "));
+      if (this.config?.unit_of_measurement) {
+        state.appendChild(
+          document.createTextNode(this.config?.unit_of_measurement)
+        );
+      } else if (attributes.unit_of_measurement) {
+        state.appendChild(
+          document.createTextNode(attributes.unit_of_measurement)
+        );
+      }
+    }
+    // clickable
+    if (this.config?.action) {
+      this.element.className += " action";
+      this.element.addEventListener("click", this.onClick);
+    }
+  };
+
+  onClick = (event: Event) => {
+    event.stopPropagation();
+    this.dashboard.request(
+      "POST",
+      "/api/services/" + this.config?.action?.replace(".", "/"),
+      '{"entity_id":"' + this.entity.entity_id + '"}',
+      () =>
+        actionRefreshTimeouts.forEach((timeout) =>
+          setTimeout(this.refresh, timeout)
+        )
+    );
+  };
+}
+
+// catch errors
+console.error = (reason: ErrorEvent | string) => {
+  const msg = (reason as ErrorEvent).message || (reason as string);
+  const container = document.getElementById("message");
+  if (container) {
+    const elem = container.appendChild(document.createElement("pre"));
+    elem.appendChild(document.createTextNode(msg));
+    setTimeout(() => elem.parentElement?.removeChild(elem), 10 * 1000);
+  } else {
+    alert(msg);
+  }
+};
+addEventListener("error", console.error);
+
+// load app
 addEventListener("load", () => new BasicDashboard());
