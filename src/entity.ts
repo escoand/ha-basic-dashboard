@@ -1,6 +1,4 @@
-import "core-js/actual/array/filter";
 //import "core-js/actual/array/includes";
-import "core-js/actual/array/map";
 import "core-js/actual/json/parse";
 import { HassEntity } from "home-assistant-js-websocket/dist/types";
 import { BasicDashboard } from "./dashboard";
@@ -131,7 +129,8 @@ export class BasicDashboardEntity {
     }
   };
 
-  setAction(action: string) {
+  actionFeedback = (action: string) => {
+    setInterval(this.refresh, actionTimeout);
     const icon = getActionIcon(action);
     if (!icon) return;
     const svg = this.element.appendChild(
@@ -142,8 +141,7 @@ export class BasicDashboardEntity {
     svg
       .appendChild(document.createElementNS(svg.namespaceURI, "path"))
       .setAttribute("d", icon);
-    setInterval(() => svg?.parentElement?.removeChild(svg), actionTimeout);
-  }
+  };
 
   onClick = (event: Event) => {
     event.stopPropagation();
@@ -151,13 +149,8 @@ export class BasicDashboardEntity {
       "POST",
       "/api/services/" + this.config?.action?.replace(".", "/"),
       '{"entity_id":"' + this.entity.entity_id + '"}',
-      (response) => {
-        this.setAction("success");
-        (JSON.parse(response) as HassEntity[])
-          .filter((entity) => entity.entity_id == this.entity.entity_id)
-          .map(this.update).length || setTimeout(this.refresh, actionTimeout);
-      },
-      () => this.setAction("failure")
+      () => this.actionFeedback("success"),
+      () => this.actionFeedback("failure")
     );
   };
 }
