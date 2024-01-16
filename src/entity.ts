@@ -1,7 +1,8 @@
-//import "core-js/actual/array/includes";
+import "core-js/actual/array/includes";
 import "core-js/actual/json/parse";
 import { HassEntity } from "home-assistant-js-websocket/dist/types";
 import { BasicDashboard } from "./dashboard";
+import { errorWrapper } from "./errors";
 import { getActionIcon, getEntityIcon, iconViewbox } from "./icons";
 import { BasicDashboardConfigEntity } from "./types";
 
@@ -23,30 +24,31 @@ export class BasicDashboardEntity {
     );
     this.element.className = "box entity";
     this.element.id = this.config?.entity_id as string;
-    this.element.addEventListener("DOMNodeRemoved", () =>
-      clearTimeout(this.refreshToken)
+    this.element.addEventListener(
+      "DOMNodeRemoved",
+      errorWrapper(() => clearTimeout(this.refreshToken))
     );
   }
 
-  refresh = () => {
+  refresh = errorWrapper(() => {
     this.dashboard.request(
       "GET",
       "/api/states/" + (this.entity?.entity_id || this.config?.entity_id),
       undefined,
-      (response) => this.update(JSON.parse(response))
+      errorWrapper((response) => this.update(JSON.parse(response)))
     );
     this.refreshToken = setTimeout(
       this.refresh,
       this.dashboard.config.refresh || refreshInterval
     );
-  };
+  });
 
-  update = (entity: HassEntity) => {
+  update = errorWrapper((entity: HassEntity) => {
     this.entity = entity;
     this.render();
-  };
+  });
 
-  render = () => {
+  render = errorWrapper(() => {
     if (!this.entity) return;
     this.element.id = this.entity.entity_id;
     this.element.innerHTML = "";
@@ -127,9 +129,9 @@ export class BasicDashboardEntity {
       this.element.className += " action";
       this.element.addEventListener("click", this.onClick);
     }
-  };
+  });
 
-  actionFeedback = (action: string) => {
+  actionFeedback = errorWrapper((action: string) => {
     setInterval(this.refresh, actionTimeout);
     const icon = getActionIcon(action);
     if (!icon) return;
@@ -141,9 +143,9 @@ export class BasicDashboardEntity {
     svg
       .appendChild(document.createElementNS(svg.namespaceURI, "path"))
       .setAttribute("d", icon);
-  };
+  });
 
-  onClick = (event: Event) => {
+  onClick = errorWrapper((event: Event) => {
     event.stopPropagation();
     this.dashboard.request(
       "POST",
@@ -152,5 +154,5 @@ export class BasicDashboardEntity {
       () => this.actionFeedback("success"),
       () => this.actionFeedback("failure")
     );
-  };
+  });
 }

@@ -7,6 +7,7 @@ import "core-js/actual/object/keys";
 import { HassEntity } from "home-assistant-js-websocket/dist/types";
 import { BasicDashboardEntity } from "./entity";
 import { BasicDashboardConfig } from "./types";
+import { errorWrapper } from "./errors";
 
 export class BasicDashboard {
   config: BasicDashboardConfig;
@@ -26,19 +27,24 @@ export class BasicDashboard {
       document.getElementById("status") ??
       this.throwException("unable to find status element");
     // config
-    this.request("GET", "config.json", undefined, (response) => {
-      this.config = JSON.parse(response);
-      Object.keys(this.config.floors || []).map((floor) => {
-        const elem = elFloors.appendChild(document.createElement("div"));
-        elem.appendChild(document.createTextNode(floor));
-        elem.className = "box floor action";
-        elem.addEventListener("click", () => this.switchFloor(floor));
-      });
-      this.switchFloor(Object.keys(this.config.floors || [])[0]);
-    });
+    this.request(
+      "GET",
+      "config.json",
+      undefined,
+      errorWrapper((response) => {
+        this.config = JSON.parse(response);
+        Object.keys(this.config.floors || []).map((floor) => {
+          const elem = elFloors.appendChild(document.createElement("div"));
+          elem.appendChild(document.createTextNode(floor));
+          elem.className = "box floor action";
+          elem.addEventListener("click", () => this.switchFloor(floor));
+        });
+        this.switchFloor(Object.keys(this.config.floors || [])[0]);
+      })
+    );
   }
 
-  switchFloor = (floor: string) => {
+  switchFloor = errorWrapper((floor: string) => {
     this.elEntities.innerHTML = "";
     this.floor = floor;
     const floorConfig = this.config.floors[this.floor];
@@ -49,56 +55,64 @@ export class BasicDashboard {
     } else {
       this.refresh();
     }
-  };
+  });
 
-  refresh = () =>
-    this.request("GET", "/api/states", undefined, (response) => {
-      const floor = this.config.floors[this.floor];
-      // date
-      this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
-        timeStyle: "medium",
-      });
-      // data
-      const entities = JSON.parse(response) as HassEntity[];
-      entities
-        .filter(
-          (entity) =>
-            // nothing defined
-            floor === null ||
-            // regex
-            ((typeof floor === "string" || floor instanceof String) &&
-              new RegExp(floor as string).test(entity.entity_id))
-        )
-        .forEach((entity) => {
-          new BasicDashboardEntity(this).update(entity);
+  refresh = errorWrapper(() =>
+    this.request(
+      "GET",
+      "/api/states",
+      undefined,
+      errorWrapper((response) => {
+        const floor = this.config.floors[this.floor];
+        // date
+        this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
+          timeStyle: "medium",
         });
-    });
+        // data
+        const entities = JSON.parse(response) as HassEntity[];
+        entities
+          .filter(
+            (entity) =>
+              // nothing defined
+              floor === null ||
+              // regex
+              ((typeof floor === "string" || floor instanceof String) &&
+                new RegExp(floor as string).test(entity.entity_id))
+          )
+          .forEach((entity) => {
+            new BasicDashboardEntity(this).update(entity);
+          });
+      })
+    )
+  );
 
   // https://developers.home-assistant.io/docs/api/rest/
-  request = (
-    method: string,
-    url: string,
-    body?: string,
-    callback?: (response: string) => void,
-    errorCallback?: (xhr: XMLHttpRequest) => void
-  ) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, (this.config?.base || "") + url);
-    xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
-    xhr.onreadystatechange = (evt) => {
-      if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
-        switch (xhr.status) {
-          case 200:
-            callback && callback(xhr.responseText);
-            break;
-          default:
-            errorCallback && errorCallback(xhr);
-            console.error(xhr.responseText);
+  request = errorWrapper(
+    (
+      method: string,
+      url: string,
+      body?: string,
+      callback?: (response: string) => void,
+      errorCallback?: (xhr: XMLHttpRequest) => void
+    ) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, (this.config?.base || "") + url);
+      xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
+          switch (xhr.status) {
+            case 200:
+              callback && callback(xhr.responseText);
+              break;
+            default:
+              errorCallback && errorCallback(xhr);
+              console.error(xhr.responseText);
+          }
         }
-      }
-    };
-    xhr.send(body);
-  };
+      };
+      xhr.send(body);
+    }
+  );
 
   throwException = (reason: string): never => {
     throw new Error(reason);
