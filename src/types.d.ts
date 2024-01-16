@@ -1,14 +1,15 @@
-type BasicDashboardConfig = {
+export type BasicDashboardConfig = {
   base: string;
   token: string;
+  refresh?: number;
   floors: {
     [index: string]: BasicDashboardFloor;
   };
 };
 
-type BasicDashboardFloor = BasicDashboardConfigEntity[] | string | null;
+export type BasicDashboardFloor = BasicDashboardConfigEntity[] | string | null;
 
-type BasicDashboardConfigEntity = {
+export type BasicDashboardConfigEntity = {
   entity_id: string;
   action?: string;
   attribute?: string;

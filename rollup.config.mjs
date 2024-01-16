@@ -20,7 +20,7 @@ export default {
     typescript({
       sourceMap: true,
       inlineSourceMap: true,
-      compilerOptions: { target: "ES3" },
+      compilerOptions: { target: "ES3", ignoreDeprecations: "5.0" },
     }),
     isWatching
       ? serve({

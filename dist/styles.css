@@ -36,6 +36,16 @@ body {
 .entity {
   float: left;
   height: 105px;
+  position: relative;
+}
+
+.entity .action {
+  background: white;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
 
 .entity .name {

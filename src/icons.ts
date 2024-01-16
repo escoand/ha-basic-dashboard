@@ -6,6 +6,7 @@ import {
   mdiAirHumidifierOff,
   mdiAlert,
   mdiAlertCircle,
+  mdiAlertDecagramOutline,
   mdiAppleSafari,
   mdiArrowCollapseHorizontal,
   mdiArrowDownBox,
@@ -33,6 +34,7 @@ import {
   mdiChatSleep,
   mdiCheckCircle,
   mdiCheckCircleOutline,
+  mdiCheckDecagram,
   mdiCheckNetworkOutline,
   mdiCheckboxMarkedCircle,
   mdiCircle,
@@ -139,6 +141,13 @@ import {
   mdiWindowShutterOpen,
 } from "@mdi/js";
 import { HassEntity } from "home-assistant-js-websocket/dist/types";
+
+export const iconViewbox = "0 0 24 24";
+
+const actionIcons = {
+  failure: mdiAlertDecagramOutline,
+  success: mdiCheckDecagram,
+};
 
 // based on https://github.com/home-assistant/frontend/blob/dev/src/common/entity/domain_icon.ts
 const circles = {
@@ -416,7 +425,9 @@ const getIconInner = (icons, state: string) =>
     (icons?.default?.hasOwnProperty(state) && icons.default[state]) ||
     icons?.default);
 
-export const getIcon = (entity: HassEntity): string => {
+export const getActionIcon = (action: string) => actionIcons[action];
+
+export const getEntityIcon = (entity: HassEntity): string => {
   const domain = entity.entity_id.split(".")[0];
 
   return (
