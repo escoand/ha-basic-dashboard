@@ -96,6 +96,7 @@ export class BasicDashboard {
       errorCallback?: (xhr: XMLHttpRequest) => void
     ) => {
       const xhr = new XMLHttpRequest();
+      xhr.timeout = 3 * 1000;
       xhr.open(method, (this.config?.base || "") + url);
       xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
       xhr.onreadystatechange = () => {
@@ -105,11 +106,14 @@ export class BasicDashboard {
               callback && callback(xhr.responseText);
               break;
             default:
-              errorCallback && errorCallback(xhr);
-              console.error(xhr.responseText);
+              xhr.dispatchEvent(new Event("error"));
           }
         }
       };
+      xhr.addEventListener("error", () => {
+        errorCallback && errorCallback(xhr);
+        console.error(xhr.responseText);
+      });
       xhr.send(body);
     }
   );

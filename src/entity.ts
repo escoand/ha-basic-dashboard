@@ -65,9 +65,10 @@ export class BasicDashboardEntity {
     );
     // state
     const icon = getEntityIcon(this.entity);
-    const state = this.element.appendChild(document.createElement("div"));
+    const wrapper = this.element.appendChild(document.createElement("div"));
+    const state = wrapper.appendChild(document.createElement("span"));
     const attributes = this.entity.attributes;
-    state.className = "state";
+    wrapper.className = "state";
     // attribute
     if (this.config?.attribute) {
       const unitAttribute = this.config.attribute + "_unit";
@@ -100,8 +101,9 @@ export class BasicDashboardEntity {
 
     // icon
     else if (icon) {
-      state.setAttribute("title", this.entity.state);
-      const svg = state.appendChild(
+      wrapper.innerHTML = "";
+      wrapper.setAttribute("title", this.entity.state);
+      const svg = wrapper.appendChild(
         document.createElementNS("http://www.w3.org/2000/svg", "svg")
       );
       svg.setAttribute("viewBox", iconViewbox);
