@@ -66,42 +66,16 @@ export class BasicDashboardEntity {
     // state
     const icon = getEntityIcon(this.entity);
     const wrapper = this.element.appendChild(document.createElement("div"));
-    const state = wrapper.appendChild(document.createElement("span"));
-    const attributes = this.entity.attributes;
     wrapper.className = "state";
     // attribute
     if (this.config?.attribute) {
-      const unitAttribute = this.config.attribute + "_unit";
-      state.appendChild(document.createTextNode(" "));
-      /*if (["last_triggered"].includes(this.config.attribute)) {
-              state.appendChild(
-                document.createTextNode(
-                  new Date(attributes[this.config.attribute]).toLocaleString(
-                    undefined,
-                    {
-                      dateStyle: "short",
-                      timeStyle: "medium",
-                    }
-                  )
-                )
-              );
-            } else*/ {
-        state.appendChild(
-          document.createTextNode(attributes[this.config.attribute])
-        );
-      }
-      if (this.config?.unit_of_measurement) {
-        state.appendChild(
-          document.createTextNode(this.config?.unit_of_measurement)
-        );
-      } else if (unitAttribute in attributes) {
-        state.appendChild(document.createTextNode(attributes[unitAttribute]));
-      }
+      (Array.isArray(this.config.attribute)
+        ? this.config.attribute
+        : [this.config.attribute]
+      ).forEach((attr) => this.renderState(wrapper, attr));
     }
-
     // icon
     else if (icon) {
-      wrapper.innerHTML = "";
       wrapper.setAttribute("title", this.entity.state);
       const svg = wrapper.appendChild(
         document.createElementNS("http://www.w3.org/2000/svg", "svg")
@@ -111,20 +85,9 @@ export class BasicDashboardEntity {
         .appendChild(document.createElementNS(svg.namespaceURI, "path"))
         .setAttribute("d", icon);
     }
-
     // state
     else {
-      state.appendChild(document.createTextNode(this.entity.state));
-      state.appendChild(document.createTextNode(" "));
-      if (this.config?.unit_of_measurement) {
-        state.appendChild(
-          document.createTextNode(this.config?.unit_of_measurement)
-        );
-      } else if (attributes.unit_of_measurement) {
-        state.appendChild(
-          document.createTextNode(attributes.unit_of_measurement)
-        );
-      }
+      this.renderState(wrapper);
     }
     // clickable
     if (this.config?.action) {
@@ -133,8 +96,28 @@ export class BasicDashboardEntity {
     }
   });
 
+  renderState = errorWrapper((parent: HTMLElement, attr?: string) => {
+    const elem = parent.appendChild(document.createElement("span"));
+
+    function inner(state: string, unit?: string) {
+      elem.appendChild(document.createTextNode(state));
+      if (unit) {
+        elem.appendChild(document.createTextNode(unit));
+      }
+    }
+
+    attr
+      ? inner(
+          this.entity.attributes[attr],
+          this.config?.unit_of_measurement ||
+            this.entity.attributes[attr + "_unit"]
+        )
+      : inner(this.entity.state, this.entity.attributes.unit_of_measurement);
+    parent.appendChild(document.createTextNode(" "));
+  });
+
   actionFeedback = errorWrapper((action: string) => {
-    setInterval(this.refresh, actionTimeout);
+    setTimeout(this.refresh, actionTimeout);
     const icon = getActionIcon(action);
     if (!icon) return;
     const svg = this.element.appendChild(
