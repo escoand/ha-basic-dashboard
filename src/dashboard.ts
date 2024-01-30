@@ -9,6 +9,8 @@ import { BasicDashboardEntity } from "./entity";
 import { BasicDashboardConfig } from "./types";
 import { errorWrapper } from "./errors";
 
+const requestTimout = 5 * 1000;
+
 export class BasicDashboard {
   config: BasicDashboardConfig;
   private floor: string;
@@ -96,7 +98,7 @@ export class BasicDashboard {
       errorCallback?: (xhr: XMLHttpRequest) => void
     ) => {
       const xhr = new XMLHttpRequest();
-      xhr.timeout = 3 * 1000;
+      xhr.timeout = requestTimout;
       xhr.open(method, (this.config?.base || "") + url);
       xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
       xhr.onreadystatechange = () => {

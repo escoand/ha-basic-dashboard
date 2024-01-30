@@ -90,7 +90,7 @@ export class BasicDashboardEntity {
       this.renderState(wrapper);
     }
     // clickable
-    if (this.config?.action) {
+    if (this.config?.service) {
       this.element.className += " action";
       this.element.addEventListener("click", this.onClick);
     }
@@ -134,8 +134,8 @@ export class BasicDashboardEntity {
     event.stopPropagation();
     this.dashboard.request(
       "POST",
-      "/api/services/" + this.config?.action?.replace(".", "/"),
-      '{"entity_id":"' + this.entity.entity_id + '"}',
+      "/api/services/" + this.config?.service?.replace(".", "/"),
+      JSON.stringify(this.config?.service_data),
       () => this.actionFeedback("success"),
       () => this.actionFeedback("failure")
     );
