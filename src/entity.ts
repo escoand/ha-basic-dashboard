@@ -24,10 +24,6 @@ export class BasicDashboardEntity {
     );
     this.element.className = "box entity";
     this.element.id = this.config?.entity_id as string;
-    this.element.addEventListener(
-      "DOMNodeRemoved",
-      errorWrapper(() => clearTimeout(this.refreshToken))
-    );
   }
 
   refresh = errorWrapper(() => {
@@ -49,6 +45,7 @@ export class BasicDashboardEntity {
   });
 
   render = errorWrapper(() => {
+    if (!this.element) clearTimeout(this.refreshToken);
     if (!this.entity) return;
     this.element.id = this.entity.entity_id;
     this.element.innerHTML = "";
