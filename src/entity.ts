@@ -6,7 +6,7 @@ import { errorWrapper } from "./errors";
 import { getActionIcon, getEntityIcon, iconViewbox } from "./icons";
 import { BasicDashboardConfigEntity } from "./types";
 
-const refreshInterval = 5 * 60 * 1000;
+const refreshInterval = 60 * 1000;
 const actionTimeout = 3 * 1000;
 
 export class BasicDashboardEntity {

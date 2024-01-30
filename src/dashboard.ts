@@ -66,10 +66,6 @@ export class BasicDashboard {
       undefined,
       errorWrapper((response) => {
         const floor = this.config.floors[this.floor];
-        // date
-        this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
-          timeStyle: "medium",
-        });
         // data
         const entities = JSON.parse(response) as HassEntity[];
         entities
@@ -103,6 +99,10 @@ export class BasicDashboard {
       xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
       xhr.onreadystatechange = () => {
         if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
+          // date
+          this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
+            timeStyle: "medium",
+          });
           switch (xhr.status) {
             case 200:
               callback && callback(xhr.responseText);
