@@ -30,7 +30,7 @@ git pull
 The configuration has to be in the file `config.json` located in the same directory as `index.html`.
 The comments below are just for documentation and have to be removed - JSON actually doesn't allow comments.
 
-```json
+```jsonc
 {
     // URL to Home Assistant (optional, default URL of HTTP server)
     "base": "http://127.0.0.1:8123",
