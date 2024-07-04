@@ -11,7 +11,7 @@
     "rollup-plugin-corejs": "1.0.0",
     "rollup-plugin-serve": "1.1.1",
     "tslib": "2.6.3",
-    "typescript": "5.5.2"
+    "typescript": "5.5.3"
   },
   "scripts": {
     "build": "rollup -c",
