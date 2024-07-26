@@ -7,11 +7,11 @@
     "@rollup/plugin-typescript": "11.1.6",
     "core-js": "3.37.1",
     "home-assistant-js-websocket": "9.4.0",
-    "rollup": "4.18.0",
+    "rollup": "4.19.0",
     "rollup-plugin-corejs": "1.0.0",
     "rollup-plugin-serve": "1.1.1",
     "tslib": "2.6.3",
-    "typescript": "5.5.3"
+    "typescript": "5.5.4"
   },
   "scripts": {
     "build": "rollup -c",
