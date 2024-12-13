@@ -2,6 +2,7 @@ import "core-js/actual/array/includes";
 import "core-js/actual/json/parse";
 import { BasicDashboard } from "./dashboard";
 import { errorWrapper } from "./errors";
+import { parseIsoDate } from "./iso8601";
 import { BasicDashboardConfigAction, BasicDashboardElement } from "./types";
 
 const refreshInterval = 10 * 60 * 1000;
@@ -61,7 +62,7 @@ export class BasicDashboardAction implements BasicDashboardElement {
     }
   });
 
-  private renderChart = () => {
+  private renderChart = errorWrapper(() => {
     if (!this.config?.chart) {
       return;
     }
@@ -85,7 +86,8 @@ export class BasicDashboardAction implements BasicDashboardElement {
     let minY = Number.MAX_VALUE;
     let maxY = Number.MIN_VALUE;
     for (let i = 0; i < dataArr.length; i++) {
-      const x = Date.parse(dataArr[i][this.config.chart.x]);
+      const val = dataArr[i][this.config.chart.x];
+      const x = Date.parse(val) || parseIsoDate(val) || NaN;
       const y = dataArr[i][this.config.chart.y] * 100;
       minX = x < minX ? x : minX;
       maxX = x > maxX ? x : maxX;
@@ -146,5 +148,5 @@ export class BasicDashboardAction implements BasicDashboardElement {
       text.appendChild(document.createTextNode(val.toFixed(1)));
       text.setAttribute("class", "tick");
     }
-  };
+  });
 }
