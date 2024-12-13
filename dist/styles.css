@@ -69,6 +69,40 @@ body {
   width: 100%;
 }
 
+.chart {
+  height: auto;
+  width: auto;
+}
+
+.chart .name {
+  height: 1.54em;
+  overflow: hidden;
+}
+
+.chart svg {
+  font-size: small;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart svg polyline {
+  fill: none;
+  stroke: black;
+}
+
+.chart svg line.now {
+  stroke: gray;
+  stroke-dasharray: 1;
+}
+
+.chart svg line.tick {
+  stroke: gray;
+  stroke-dasharray: 5;
+}
+
+.chart svg text.tick {
+  fill: gray;
+}
+
 #footer {
   background: white;
   bottom: 0;

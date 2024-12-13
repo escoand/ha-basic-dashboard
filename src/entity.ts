@@ -1,15 +1,15 @@
 import "core-js/actual/array/includes";
 import "core-js/actual/json/parse";
-import { HassEntity } from "home-assistant-js-websocket/dist/types";
+import { HassEntity } from "home-assistant-js-websocket";
 import { BasicDashboard } from "./dashboard";
 import { errorWrapper } from "./errors";
 import { getActionIcon, getEntityIcon, iconViewbox } from "./icons";
-import { BasicDashboardConfigEntity } from "./types";
+import { BasicDashboardConfigEntity, BasicDashboardElement } from "./types";
 
 const refreshInterval = 60 * 1000;
 const actionTimeout = 3 * 1000;
 
-export class BasicDashboardEntity {
+export class BasicDashboardEntity implements BasicDashboardElement {
   private dashboard: BasicDashboard;
   private config?: BasicDashboardConfigEntity;
   private entity: HassEntity;
@@ -49,7 +49,6 @@ export class BasicDashboardEntity {
     if (!this.entity) return;
     this.element.id = this.entity.entity_id;
     this.element.innerHTML = "";
-    this.element.className = "box entity";
     // name
     const name = this.element.appendChild(document.createElement("div"));
     name.className = "name";

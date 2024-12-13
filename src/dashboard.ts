@@ -4,10 +4,11 @@ import "core-js/actual/array/is-array";
 import "core-js/actual/array/map";
 import "core-js/actual/json/parse";
 import "core-js/actual/object/keys";
-import { HassEntity } from "home-assistant-js-websocket/dist/types";
+import { HassEntity } from "home-assistant-js-websocket";
+import { BasicDashboardAction } from "./action";
 import { BasicDashboardEntity } from "./entity";
-import { BasicDashboardConfig } from "./types";
 import { errorWrapper } from "./errors";
+import { BasicDashboardConfig, BasicDashboardConfigEntry } from "./types";
 
 const requestTimout = 5 * 1000;
 
@@ -51,9 +52,7 @@ export class BasicDashboard {
     this.floor = floor;
     const floorConfig = this.config.floors[this.floor];
     if (Array.isArray(floorConfig)) {
-      floorConfig.forEach((config) =>
-        new BasicDashboardEntity(this, config).refresh()
-      );
+      floorConfig.forEach(this.createElement);
     } else {
       this.refresh();
     }
@@ -101,6 +100,7 @@ export class BasicDashboard {
         if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
           // date
           this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
+            // @ts-ignore:next-line
             timeStyle: "medium",
           });
           switch (xhr.status) {
@@ -119,6 +119,16 @@ export class BasicDashboard {
       xhr.send(body);
     }
   );
+
+  createElement = (config: BasicDashboardConfigEntry) => {
+    if ("entity_id" in config) {
+      new BasicDashboardEntity(this, config).refresh();
+    } else if ("action" in config) {
+      new BasicDashboardAction(this, config).refresh();
+    } else {
+      console.log("unknown config entry");
+    }
+  };
 
   throwException = (reason: string): never => {
     throw new Error(reason);
