@@ -81,6 +81,7 @@ body {
 
 .chart svg {
   font-size: small;
+  stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
 
@@ -91,7 +92,6 @@ body {
 
 .chart svg line.now {
   stroke: gray;
-  stroke-dasharray: 1;
 }
 
 .chart svg line.tick {

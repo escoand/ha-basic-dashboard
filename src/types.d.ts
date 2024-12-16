@@ -31,11 +31,17 @@ export type BasicDashboardConfigAction = {
 
 // charts config
 export type BasicDashboardChart = {
-  data: string[];
+  data: BasicDashboardChartEntry[];
   height?: number;
   ticks?: number;
   now?: boolean;
   width?: number;
+};
+
+export type BasicDashboardChartEntry = {
+  data: string[];
+  factor?: number;
+  stepline?: boolean;
   x: string;
   y: string;
 };

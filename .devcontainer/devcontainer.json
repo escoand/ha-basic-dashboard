@@ -1,0 +1,15 @@
+{
+	"name": "Container",
+	"image": "node:alpine",
+	"forwardPorts": [
+		10001
+	],
+	"postCreateCommand": "npm ci",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"esbenp.prettier-vscode"
+			]
+		}
+	}
+}
