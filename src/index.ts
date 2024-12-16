@@ -1,3 +1,5 @@
+import "./polyfill";
+
 import { BasicDashboard } from "./dashboard";
 import { errorHandler, errorWrapper } from "./errors";
 

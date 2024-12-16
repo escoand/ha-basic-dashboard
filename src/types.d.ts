@@ -1,49 +1,68 @@
 // config
 export type BasicDashboardConfig = {
   base: string;
-  token: string;
-  refresh?: number;
   floors: {
     [index: string]: BasicDashboardFloor;
   };
+  locale?: Intl.LocalesArgument;
+  refresh?: number;
+  token: string;
 };
 
 export type BasicDashboardFloor = BasicDashboardConfigEntry[] | string | null;
 
 export type BasicDashboardConfigEntry =
+  | BasicDashboardConfigAction
   | BasicDashboardConfigEntity
-  | BasicDashboardConfigAction;
+  | BasicDashboardConfigHistory;
 
 export type BasicDashboardConfigEntity = {
   entity_id: string;
   attribute?: string | string[];
   name?: string;
   service?: string;
-  service_data: { string: string };
+  service_data: {};
   unit_of_measurement?: string;
 };
 
-export type BasicDashboardConfigAction = {
-  action: string;
-  chart?: BasicDashboardChart;
+export type BasicDashboardConfigChartElement = {
+  chart: BasicDashboardConfigChartFull;
   name?: string;
 };
 
+export type BasicDashboardConfigHistory = BasicDashboardConfigChartElement & {
+  chart: BasicDashboardConfigChartBase;
+  entities: (string | BasicDashboardConfigHistoryEntity)[];
+};
+export type BasicDashboardConfigHistoryEntity = {
+  attribute?: string;
+  entity_id: string;
+};
+
+export type BasicDashboardConfigAction = BasicDashboardConfigChartElement & {
+  action: string;
+  action_data?: {};
+};
+
 // charts config
-export type BasicDashboardChart = {
-  data: BasicDashboardChartEntry[];
+export type BasicDashboardConfigChartBase = {
+  datetime_format?: Intl.DateTimeFormatOptions;
   height?: number;
   ticks?: number;
-  now?: boolean;
   width?: number;
 };
 
-export type BasicDashboardChartEntry = {
-  data: string[];
+export type BasicDashboardConfigChartFull = BasicDashboardConfigChartBase & {
+  data: BasicDashboardChartConfigEntry[];
+  now?: boolean;
+};
+
+export type BasicDashboardChartConfigEntry = {
+  data?: string[];
   factor?: number;
   stepline?: boolean;
-  x: string;
-  y: string;
+  x: string | string[];
+  y: string | string[];
 };
 
 // element

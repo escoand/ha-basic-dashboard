@@ -1,0 +1,10 @@
+import "core-js/actual/array/filter";
+import "core-js/actual/array/for-each";
+import "core-js/actual/array/includes";
+import "core-js/actual/array/is-array";
+import "core-js/actual/array/map";
+import "core-js/actual/json/parse";
+import "core-js/actual/json/stringify";
+import "core-js/actual/object/assign";
+import "core-js/actual/object/keys";
+import "core-js/actual/string/pad-start";

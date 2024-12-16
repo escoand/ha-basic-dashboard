@@ -1,19 +1,13 @@
-import "core-js/actual/array/filter";
-import "core-js/actual/array/for-each";
-import "core-js/actual/array/is-array";
-import "core-js/actual/array/map";
-import "core-js/actual/json/parse";
-import "core-js/actual/object/keys";
 import { HassEntity } from "home-assistant-js-websocket";
 import { BasicDashboardAction } from "./action";
 import { BasicDashboardEntity } from "./entity";
 import { errorWrapper } from "./errors";
 import { BasicDashboardConfig, BasicDashboardConfigEntry } from "./types";
-
-const requestTimout = 5 * 1000;
+import { defaultRequestTimout } from "./const";
+import { BasicDashboardHistory } from "./history";
 
 export class BasicDashboard {
-  config: BasicDashboardConfig;
+  config: BasicDashboardConfig | undefined;
   private floor: string;
   elEntities: HTMLElement;
   private elStatus: HTMLElement;
@@ -36,13 +30,13 @@ export class BasicDashboard {
       undefined,
       errorWrapper((response) => {
         this.config = JSON.parse(response);
-        Object.keys(this.config.floors || []).map((floor) => {
+        Object.keys(this.config?.floors || []).map((floor) => {
           const elem = elFloors.appendChild(document.createElement("div"));
           elem.appendChild(document.createTextNode(floor));
           elem.className = "box floor action";
           elem.addEventListener("click", () => this.switchFloor(floor));
         });
-        this.switchFloor(Object.keys(this.config.floors || [])[0]);
+        this.switchFloor(Object.keys(this.config?.floors || [])[0]);
       })
     );
   }
@@ -50,7 +44,7 @@ export class BasicDashboard {
   switchFloor = errorWrapper((floor: string) => {
     this.elEntities.innerHTML = "";
     this.floor = floor;
-    const floorConfig = this.config.floors[this.floor];
+    const floorConfig = this.config?.floors[this.floor];
     if (Array.isArray(floorConfig)) {
       floorConfig.forEach(this.createElement);
     } else {
@@ -64,7 +58,7 @@ export class BasicDashboard {
       "/api/states",
       undefined,
       errorWrapper((response) => {
-        const floor = this.config.floors[this.floor];
+        const floor = this.config?.floors[this.floor];
         // data
         const entities = JSON.parse(response) as HassEntity[];
         entities
@@ -93,16 +87,16 @@ export class BasicDashboard {
       errorCallback?: (xhr: XMLHttpRequest) => void
     ) => {
       const xhr = new XMLHttpRequest();
-      xhr.timeout = requestTimout;
+      xhr.timeout = defaultRequestTimout;
       xhr.open(method, (this.config?.base || "") + url);
       xhr.setRequestHeader("Authorization", "Bearer " + this.config?.token);
       xhr.onreadystatechange = () => {
         if (xhr.readyState == 4 /* XMLHttpRequest.DONE */) {
           // date
-          this.elStatus.innerHTML = new Date().toLocaleTimeString(undefined, {
-            // @ts-ignore:next-line
-            timeStyle: "medium",
-          });
+          this.elStatus.innerHTML = new Date().toLocaleTimeString(
+            this.config?.locale,
+            { timeStyle: "medium" }
+          );
           switch (xhr.status) {
             case 200:
               callback && callback(xhr.responseText);
@@ -123,6 +117,8 @@ export class BasicDashboard {
   createElement = (config: BasicDashboardConfigEntry) => {
     if ("entity_id" in config) {
       new BasicDashboardEntity(this, config).refresh();
+    } else if ("entities" in config) {
+      new BasicDashboardHistory(this, config).refresh();
     } else if ("action" in config) {
       new BasicDashboardAction(this, config).refresh();
     } else {

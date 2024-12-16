@@ -1,13 +1,9 @@
-import "core-js/actual/array/includes";
-import "core-js/actual/json/parse";
 import { HassEntity } from "home-assistant-js-websocket";
+import { defaultActionTimout, defaultRefreshInterval } from "./const";
 import { BasicDashboard } from "./dashboard";
 import { errorWrapper } from "./errors";
 import { getActionIcon, getEntityIcon, iconViewbox } from "./icons";
 import { BasicDashboardConfigEntity, BasicDashboardElement } from "./types";
-
-const refreshInterval = 60 * 1000;
-const actionTimeout = 3 * 1000;
 
 export class BasicDashboardEntity implements BasicDashboardElement {
   private dashboard: BasicDashboard;
@@ -35,7 +31,7 @@ export class BasicDashboardEntity implements BasicDashboardElement {
     );
     this.refreshToken = setTimeout(
       this.refresh,
-      this.dashboard.config.refresh || refreshInterval
+      this.dashboard.config?.refresh || defaultRefreshInterval
     );
   });
 
@@ -113,7 +109,7 @@ export class BasicDashboardEntity implements BasicDashboardElement {
   });
 
   actionFeedback = errorWrapper((action: string) => {
-    setTimeout(this.refresh, actionTimeout);
+    setTimeout(this.refresh, defaultActionTimout);
     const icon = getActionIcon(action);
     if (!icon) return;
     const svg = this.element.appendChild(
