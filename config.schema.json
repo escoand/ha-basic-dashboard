@@ -1,0 +1,500 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "BasicDashboardConfigAction": {
+            "allOf": [
+                {
+                    "properties": {
+                        "chart": {
+                            "$ref": "#/definitions/BasicDashboardConfigChartFull"
+                        },
+                        "name": {
+                            "description": "name to show",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "action": {
+                            "description": "action to call",
+                            "type": "string"
+                        },
+                        "action_data": {
+                            "description": "data to pass to the action",
+                            "properties": {},
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                }
+            ],
+            "description": "element for an action's response chart"
+        },
+        "BasicDashboardConfigChartFull": {
+            "allOf": [
+                {
+                    "description": "element for an entity's history chart",
+                    "properties": {
+                        "datetime_format": {
+                            "$ref": "#/definitions/Intl.DateTimeFormatOptions",
+                            "description": "format of the x-axis"
+                        },
+                        "height": {
+                            "description": "height of the chart in px",
+                            "type": "number"
+                        },
+                        "ticks": {
+                            "default": 3,
+                            "description": "number of y-axis ticks",
+                            "type": "number"
+                        },
+                        "width": {
+                            "description": "width of the chart in px",
+                            "type": "number"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "data": {
+                            "items": {
+                                "properties": {
+                                    "data": {
+                                        "description": "path in the action response to the data\nthe path should point to an array of data",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    },
+                                    "factor": {
+                                        "description": "multiply the value with",
+                                        "type": "number"
+                                    },
+                                    "stepline": {
+                                        "default": false,
+                                        "description": "show the graph as stepline, like Home Assistant",
+                                        "type": "boolean"
+                                    },
+                                    "x": {
+                                        "anyOf": [
+                                            {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "path to the data of the x-axis"
+                                    },
+                                    "y": {
+                                        "anyOf": [
+                                            {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "path to the data of the y-axis"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "now": {
+                            "default": false,
+                            "description": "show an indicator for the current time",
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                }
+            ],
+            "description": "chart configuration"
+        },
+        "BasicDashboardConfigEntry": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/BasicDashboardConfigAction",
+                    "description": "element for an action's response chart"
+                },
+                {
+                    "properties": {
+                        "attribute": {
+                            "anyOf": [
+                                {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "default": "state of entity",
+                            "description": "attribute to show"
+                        },
+                        "entity_id": {
+                            "description": "entity_id of the respective entity",
+                            "type": "string"
+                        },
+                        "name": {
+                            "default": "name in Home Assistant",
+                            "description": "name to show",
+                            "type": "string"
+                        },
+                        "service": {
+                            "description": "service to call on click",
+                            "type": "string"
+                        },
+                        "service_data": {
+                            "description": "data to pass to service call",
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "unit_of_measurement": {
+                            "description": "unit of measurement",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "$ref": "#/definitions/BasicDashboardConfigHistory"
+                }
+            ]
+        },
+        "BasicDashboardConfigHistory": {
+            "allOf": [
+                {
+                    "properties": {
+                        "chart": {
+                            "$ref": "#/definitions/BasicDashboardConfigChartFull"
+                        },
+                        "name": {
+                            "description": "name to show",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "chart": {
+                            "description": "element for an entity's history chart",
+                            "properties": {
+                                "datetime_format": {
+                                    "$ref": "#/definitions/Intl.DateTimeFormatOptions",
+                                    "description": "format of the x-axis"
+                                },
+                                "height": {
+                                    "description": "height of the chart in px",
+                                    "type": "number"
+                                },
+                                "ticks": {
+                                    "default": 3,
+                                    "description": "number of y-axis ticks",
+                                    "type": "number"
+                                },
+                                "width": {
+                                    "description": "width of the chart in px",
+                                    "type": "number"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "entities": {
+                            "description": "entities to show",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "properties": {
+                                            "attribute": {
+                                                "default": "state of entity",
+                                                "description": "attribute to show",
+                                                "type": "string"
+                                            },
+                                            "entity_id": {
+                                                "description": "entity_id of the entity",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                }
+            ]
+        },
+        "BasicDashboardFloor": {
+            "anyOf": [
+                {
+                    "items": {
+                        "$ref": "#/definitions/BasicDashboardConfigEntry"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            ],
+            "description": "array of elements to show"
+        },
+        "Intl.DateTimeFormatOptions": {
+            "properties": {
+                "calendar": {
+                    "type": "string"
+                },
+                "dateStyle": {
+                    "enum": [
+                        "full",
+                        "long",
+                        "medium",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "day": {
+                    "enum": [
+                        "2-digit",
+                        "numeric"
+                    ],
+                    "type": "string"
+                },
+                "dayPeriod": {
+                    "enum": [
+                        "long",
+                        "narrow",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "era": {
+                    "enum": [
+                        "long",
+                        "narrow",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "formatMatcher": {
+                    "enum": [
+                        "basic",
+                        "best fit"
+                    ],
+                    "type": "string"
+                },
+                "hour": {
+                    "enum": [
+                        "2-digit",
+                        "numeric"
+                    ],
+                    "type": "string"
+                },
+                "hour12": {
+                    "type": "boolean"
+                },
+                "hourCycle": {
+                    "enum": [
+                        "h11",
+                        "h12",
+                        "h23",
+                        "h24"
+                    ],
+                    "type": "string"
+                },
+                "localeMatcher": {
+                    "enum": [
+                        "best fit",
+                        "lookup"
+                    ],
+                    "type": "string"
+                },
+                "minute": {
+                    "enum": [
+                        "2-digit",
+                        "numeric"
+                    ],
+                    "type": "string"
+                },
+                "month": {
+                    "enum": [
+                        "2-digit",
+                        "long",
+                        "narrow",
+                        "numeric",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "numberingSystem": {
+                    "type": "string"
+                },
+                "second": {
+                    "enum": [
+                        "2-digit",
+                        "numeric"
+                    ],
+                    "type": "string"
+                },
+                "timeStyle": {
+                    "enum": [
+                        "full",
+                        "long",
+                        "medium",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "timeZone": {
+                    "type": "string"
+                },
+                "timeZoneName": {
+                    "enum": [
+                        "long",
+                        "longGeneric",
+                        "longOffset",
+                        "short",
+                        "shortGeneric",
+                        "shortOffset"
+                    ],
+                    "type": "string"
+                },
+                "weekday": {
+                    "enum": [
+                        "long",
+                        "narrow",
+                        "short"
+                    ],
+                    "type": "string"
+                },
+                "year": {
+                    "enum": [
+                        "2-digit",
+                        "numeric"
+                    ],
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Intl.Locale": {
+            "properties": {
+                "baseName": {
+                    "type": "string"
+                },
+                "calendar": {
+                    "type": "string"
+                },
+                "caseFirst": {
+                    "enum": [
+                        "false",
+                        "lower",
+                        "upper"
+                    ],
+                    "type": "string"
+                },
+                "collation": {
+                    "type": "string"
+                },
+                "hourCycle": {
+                    "enum": [
+                        "h11",
+                        "h12",
+                        "h23",
+                        "h24"
+                    ],
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "numberingSystem": {
+                    "type": "string"
+                },
+                "numeric": {
+                    "type": "boolean"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "script": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Intl.LocalesArgument": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/Intl.Locale"
+                },
+                {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Intl.Locale"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "properties": {
+        "base": {
+            "default": "URL of HTTP server",
+            "description": "URL to Home Assistant",
+            "type": "string"
+        },
+        "floors": {
+            "additionalProperties": {
+                "$ref": "#/definitions/BasicDashboardFloor"
+            },
+            "description": "list of floors or tabs",
+            "type": "object"
+        },
+        "locale": {
+            "$ref": "#/definitions/Intl.LocalesArgument"
+        },
+        "refresh": {
+            "default": "1min",
+            "description": "time in milliseconds for refreshing the entitites",
+            "type": "integer"
+        },
+        "token": {
+            "description": "long living access token from user settings",
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
+
