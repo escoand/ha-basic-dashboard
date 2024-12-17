@@ -14,11 +14,7 @@ export default {
   plugins: [
     nodeResolve(),
     commonjs(),
-    typescript({
-      sourceMap: true,
-      inlineSourceMap: true,
-      compilerOptions: { target: "ES3", ignoreDeprecations: "5.0" },
-    }),
+    typescript(),
     process.env.ROLLUP_WATCH
       ? serve({
           open: true,

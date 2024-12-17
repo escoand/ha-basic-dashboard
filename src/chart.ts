@@ -72,7 +72,7 @@ export abstract class BasicDashboardChartBase implements BasicDashboardElement {
     }
   });
 
-  protected renderChart() {
+  renderChart = errorWrapper(() => {
     this.svg = this.element.appendChild(
       document.createElementNS("http://www.w3.org/2000/svg", "svg")
     );
@@ -86,41 +86,45 @@ export abstract class BasicDashboardChartBase implements BasicDashboardElement {
     const points = this.config?.chart.data.map(this.collectPoints);
     const range = this.calcRange(points || []);
     points?.forEach((_) => this.renderChartData(_, range));
-  }
+  });
 
-  dataAtPath = (data: any, path: string | string[] | undefined) => {
-    if (typeof path === "string") {
-      return data[path];
-    } else if (Array.isArray(path)) {
-      return path.reduce((data, key) => data[key], data) as [][];
-    } else {
-      return data;
-    }
-  };
-
-  collectPoints = (entryCfg: BasicDashboardChartConfigEntry): ChartData => {
-    const points: ChartPoint[] = [];
-    const ticks: number[] = [];
-    let prevY: number | undefined = undefined;
-
-    this.dataAtPath(this.data, entryCfg.data).forEach((point, idx) => {
-      const val = this.dataAtPath(point, entryCfg.x);
-      const dateX = Date.parse(val) || parseIsoDate(val);
-      const x = dateX || parseFloat(val) || idx;
-      const y = this.dataAtPath(point, entryCfg.y) * (entryCfg.factor ?? 1);
-      if (isNaN(y)) return;
-      if (entryCfg.stepline && prevY !== undefined) {
-        points.push({ x, y: prevY });
+  dataAtPath = errorWrapper(
+    (data: any, path: string | string[] | undefined) => {
+      if (typeof path === "string") {
+        return data[path];
+      } else if (Array.isArray(path)) {
+        return path.reduce((data, key) => data[key], data) as [][];
+      } else {
+        return data;
       }
-      points.push({ x, y });
-      if (dateX) ticks.push(dateX);
-      prevY = y;
-    });
+    }
+  );
 
-    return { points, ticks };
-  };
+  collectPoints = errorWrapper(
+    (entryCfg: BasicDashboardChartConfigEntry): ChartData => {
+      const points: ChartPoint[] = [];
+      const ticks: number[] = [];
+      let prevY: number | undefined = undefined;
 
-  calcRange = (data: ChartData[]): ChartRange => {
+      this.dataAtPath(this.data, entryCfg.data).forEach((point, idx) => {
+        const val = this.dataAtPath(point, entryCfg.x);
+        const dateX = Date.parse(val) || parseIsoDate(val);
+        const x = dateX || parseFloat(val) || idx;
+        const y = this.dataAtPath(point, entryCfg.y) * (entryCfg.factor ?? 1);
+        if (isNaN(y)) return;
+        if (entryCfg.stepline && prevY !== undefined) {
+          points.push({ x, y: prevY });
+        }
+        points.push({ x, y });
+        if (dateX) ticks.push(dateX);
+        prevY = y;
+      });
+
+      return { points, ticks };
+    }
+  );
+
+  calcRange = errorWrapper((data: ChartData[]): ChartRange => {
     let xs: number[] = [];
     let ys: number[] = [];
 
@@ -137,9 +141,9 @@ export abstract class BasicDashboardChartBase implements BasicDashboardElement {
       minY: Math.min.apply(Math, ys),
       maxY: Math.max.apply(Math, ys),
     };
-  };
+  });
 
-  renderChartData = (data: ChartData, range: ChartRange) => {
+  renderChartData = errorWrapper((data: ChartData, range: ChartRange) => {
     const isEmpty = this.svg.childNodes.length == 0;
     const ticks = this.config?.chart.ticks || defaultGraphTicks;
     const scaleX = this.graphWidth / (range.maxX - range.minX);
@@ -212,18 +216,16 @@ export abstract class BasicDashboardChartBase implements BasicDashboardElement {
     }
 
     // data line
+    const points = data.points
+      .map(
+        ({ x, y }) =>
+          `${(x - range.minX) * scaleX},${
+            this.graphHeight - (y - range.minY) * scaleY
+          }`
+      )
+      .join(" ");
     this.svg
       .appendChild(document.createElementNS(this.svg.namespaceURI, "polyline"))
-      .setAttribute(
-        "points",
-        data.points
-          .map(
-            ({ x, y }) =>
-              `${(x - range.minX) * scaleX},${
-                this.graphHeight - (y - range.minY) * scaleY
-              }`
-          )
-          .join(" ")
-      );
-  };
+      .setAttribute("points", points);
+  });
 }

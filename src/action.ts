@@ -9,7 +9,7 @@ export class BasicDashboardAction extends BasicDashboardChartBase {
     this.dashboard.request(
       "POST",
       "/api/services/" + config.action.replace(".", "/") + "?return_response",
-      JSON.stringify(config.action_data),
+      JSON.stringify && JSON.stringify(config.action_data),
       errorWrapper(this.update)
     );
     setTimeout(

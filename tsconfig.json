@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2017", "es2020.date", "es2020.intl"],
+    "target": "es3",
+    "ignoreDeprecations": "5.0",
+    // debugging
+    "sourceMap": true,
+    "inlineSources": true
+  }
+}
