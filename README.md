@@ -2,7 +2,7 @@
 
 Basic Dashboard for Home Assistant meant to be shown on an Kindle device.
 
-![](overview.png)
+![](overview.jpg)
 
 It should work with any [ES3](https://en.wikipedia.org/wiki/ECMAScript_version_history) compatible device (at least viewing) and was tested with [Kindle 4](https://en.wikipedia.org/wiki/Amazon_Kindle#Kindle_4). But it's much more useable with an illuminate touch device like [Kindle Paperwhite](<https://en.wikipedia.org/wiki/Amazon_Kindle#Kindle_Paperwhite_(first_iteration)>).
 
