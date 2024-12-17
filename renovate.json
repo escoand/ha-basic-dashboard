@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    ":preserveSemverRanges",
     "config:js-app",
-    "group:allNonMajor"
+    "group:allNonMajor",
+    ":preserveSemverRanges"
   ]
 }
