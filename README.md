@@ -33,6 +33,7 @@ The comments below are just for documentation and have to be removed - JSON actu
 
 ```jsonc
 {
+    "$schema": "https://raw.githubusercontent.com/escoand/ha-basic-dashboard/refs/heads/main/config.schema.json",
     // URL to Home Assistant (optional, default URL of HTTP server)
     "base": "http://127.0.0.1:8123",
     // Long living access token from user settings
