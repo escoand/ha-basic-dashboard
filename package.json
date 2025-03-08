@@ -1,17 +1,17 @@
 {
   "devDependencies": {
     "@mdi/js": "7.4.47",
-    "@rollup/plugin-commonjs": "28.0.2",
+    "@rollup/plugin-commonjs": "28.0.3",
     "@rollup/plugin-node-resolve": "16.0.0",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "12.1.2",
-    "core-js": "3.40.0",
+    "core-js": "3.41.0",
     "home-assistant-js-websocket": "9.4.0",
-    "rollup": "4.32.1",
+    "rollup": "4.35.0",
     "rollup-plugin-corejs": "1.0.1",
     "rollup-plugin-serve": "1.1.1",
     "tslib": "2.8.1",
-    "typescript": "<5.8",
+    "typescript": "<5.9",
     "typescript-json-schema": "0.65.1"
   },
   "scripts": {
